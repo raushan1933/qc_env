@@ -7,9 +7,10 @@ from openai import OpenAI
 from models import QcAction
 from server.qc_env_environment import QcEnvironment
 
-API_KEY = os.getenv("HF_TOKEN") or "hf_your_token_here" # Apna hugging face token dalna yahan
-API_BASE_URL = os.getenv("API_BASE_URL") or "https://router.huggingface.co/v1"
-MODEL_NAME = os.getenv("MODEL_NAME") or "Qwen/Qwen2.5-72B-Instruct"
+# 🔥 YAHAN BADLAV KIYA HAI: "HF_TOKEN" ki jagah "API_KEY"
+API_KEY = os.environ.get("API_KEY", "hf_your_token_here") 
+API_BASE_URL = os.environ.get("API_BASE_URL", "https://router.huggingface.co/v1")
+MODEL_NAME = os.environ.get("MODEL_NAME", "Qwen/Qwen2.5-72B-Instruct")
 
 TASK_NAME = "quick-commerce-manager"
 BENCHMARK = "qc_env"
@@ -83,6 +84,7 @@ async def main() -> None:
     log_start(task=TASK_NAME, env=BENCHMARK, model=MODEL_NAME)
 
     try:
+        # Ek choti si tip: Agar error aaye "object can't be used in await", toh yahan se aur niche se 'await' hata dena
         obs = await env.reset()
         last_profit = 0.0
 
