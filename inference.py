@@ -7,9 +7,7 @@ from openai import OpenAI
 from models import QcAction
 from server.qc_env_environment import QcEnvironment
 
-# 🔥 YAHAN BADLAV KIYA HAI: "HF_TOKEN" ki jagah "API_KEY"
-API_KEY = os.environ.get("API_KEY", "hf_your_token_here") 
-API_BASE_URL = os.environ.get("API_BASE_URL", "https://router.huggingface.co/v1")
+# Upar wale variables rehne do, par main() ke andar hum direct os.environ use karenge
 MODEL_NAME = os.environ.get("MODEL_NAME", "Qwen/Qwen2.5-72B-Instruct")
 
 TASK_NAME = "quick-commerce-manager"
@@ -64,16 +62,18 @@ def get_model_message(client: OpenAI, step: int, current_stock: int, predicted_d
             stream=False,
         )
         text = (completion.choices[0].message.content or "").strip()
-        # Ensure it's a number
         return int(''.join(filter(str.isdigit, text)) or "20")
     except Exception as exc:
         print(f"[DEBUG] Model request failed: {exc}", flush=True)
-        return 20 # default fallback
+        return 20 
 
 async def main() -> None:
-    client = OpenAI(base_url=API_BASE_URL, api_key=API_KEY)
+    # 🔥 FIX 1: Exact wahi line jo Scaler ne mail mein maangi hai
+    client = OpenAI(
+        base_url=os.environ.get("API_BASE_URL", "https://router.huggingface.co/v1"), 
+        api_key=os.environ.get("API_KEY", "hf_your_token_here")
+    )
     
-    # Initialize our Quick Commerce Environment
     env = QcEnvironment()
     
     rewards: List[float] = []
@@ -84,17 +84,16 @@ async def main() -> None:
     log_start(task=TASK_NAME, env=BENCHMARK, model=MODEL_NAME)
 
     try:
-        # Ek choti si tip: Agar error aaye "object can't be used in await", toh yahan se aur niche se 'await' hata dena
-        obs = await env.reset()
+        # 🔥 FIX 2: Yahan se 'await' hata diya kyunki ab environment normal function hai
+        obs = env.reset()
         last_profit = 0.0
 
         for step in range(1, MAX_STEPS + 1):
             
-            # 1. Ask AI for action
             reorder_qty = get_model_message(client, step, obs.current_stock, obs.predicted_demand, last_profit)
             
-            # 2. Step into environment
-            result = await env.step(QcAction(reorder_quantity=reorder_qty))
+            # 🔥 FIX 3: Yahan se bhi 'await' hata diya
+            result = env.step(QcAction(reorder_quantity=reorder_qty))
             obs = result["observation"]
             reward = result["reward"]
             done = result["done"]
@@ -106,12 +105,13 @@ async def main() -> None:
             log_step(step=step, action=f"order({reorder_qty})", reward=reward, done=done, error=None)
             
             if done:
-                success = sum(rewards) > 2.0 # Simple success criteria
+                success = sum(rewards) > 2.0 
                 score = sum(rewards) / MAX_STEPS
                 break
 
         log_end(success=success, steps=steps_taken, score=score, rewards=rewards)
     except Exception as e:
+        print(f"Error occurred: {e}") # Isse hume exact error dikhega agar kuch phata toh
         log_end(success=False, steps=steps_taken, score=0.0, rewards=rewards)
 
 if __name__ == "__main__":
