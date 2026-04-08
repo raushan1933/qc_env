@@ -75,10 +75,10 @@ def main(host: str = "0.0.0.0", port: int = 8000):
     uvicorn.run(app, host=host, port=port)
 
 
-if __name__ == "__main__":
-    import argparse
+def main():
+    import uvicorn
+    # 'app:app' ka matlab hai app.py file aur usme 'app' naam ka FastAPI instance
+    uvicorn.run("app:app", host="0.0.0.0", port=8000)
 
-    parser = argparse.ArgumentParser()
-    parser.add_argument("--port", type=int, default=8000)
-    args = parser.parse_args()
-    main(port=args.port)
+if __name__ == "__main__":
+    main()
