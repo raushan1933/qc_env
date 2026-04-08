@@ -10,10 +10,9 @@ MAX_DAYS = 7
 class QcEnvironment(Environment[QcAction, QcObservation, QcState]):
     def __init__(self):
         super().__init__()
-        # Initialize state directly
+        # Internal state variable ka naam 'current_state' hi rehne do
         self.current_state = QcState(current_stock=10, day=1, total_profit=0.0)
 
-    # Async hata diya taaki server crash na ho
     def reset(self) -> QcObservation:
         self.current_state = QcState(current_stock=10, day=1, total_profit=0.0)
         return self._get_observation()
@@ -26,7 +25,6 @@ class QcEnvironment(Environment[QcAction, QcObservation, QcState]):
             day=self.current_state.day
         )
 
-    # Async hata diya
     def step(self, action: QcAction):
         self.current_state.current_stock += action.reorder_quantity
         actual_demand = random.randint(10, 30)
@@ -46,7 +44,6 @@ class QcEnvironment(Environment[QcAction, QcObservation, QcState]):
         self.current_state.day += 1
         done = self.current_state.day > MAX_DAYS
 
-        # AI ko marks dena (0.0 to 1.0)
         reward = max(0.0, min(1.0, (daily_profit + 150) / 450.0))
 
         return {
@@ -56,6 +53,6 @@ class QcEnvironment(Environment[QcAction, QcObservation, QcState]):
             "info": {"Sold": items_sold, "Leftover": leftover_stock, "Missed": missed_sales, "Profit": daily_profit}
         }
     
-    # Iska naam get_state rakha hai taaki confusion na ho
-    def get_state(self) -> QcState:
-        return self.current_state
+    # ISKA NAAM WAPAS 'state' KAR DIYA (Zaroori hai)
+    def state(self) -> QcState:
+        return self.current_stater
