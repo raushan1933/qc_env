@@ -7,10 +7,7 @@ from openai import OpenAI
 from models import QcAction
 from server.qc_env_environment import QcEnvironment
 
-# Upar wale variables rehne do, par main() ke andar hum direct os.environ use karenge
 MODEL_NAME = os.environ.get("MODEL_NAME", "Qwen/Qwen2.5-72B-Instruct")
-
-TASK_NAME = "quick-commerce-manager"
 BENCHMARK = "qc_env"
 MAX_STEPS = 7
 TEMPERATURE = 0.7
@@ -68,7 +65,6 @@ def get_model_message(client: OpenAI, step: int, current_stock: int, predicted_d
         return 20 
 
 async def main() -> None:
-    # 🔥 FIX 1: Exact wahi line jo Scaler ne mail mein maangi hai
     client = OpenAI(
         base_url=os.environ.get("API_BASE_URL", "https://router.huggingface.co/v1"), 
         api_key=os.environ.get("API_KEY", "hf_your_token_here")
@@ -76,43 +72,46 @@ async def main() -> None:
     
     env = QcEnvironment()
     
-    rewards: List[float] = []
-    steps_taken = 0
-    score = 0.0
-    success = False
+    # 🔥 FIX: Yahan humne wo 3 tasks ki list bana di jo yaml mein daali thi!
+    TASKS = ["task_easy", "task_medium", "task_hard"]
 
-    log_start(task=TASK_NAME, env=BENCHMARK, model=MODEL_NAME)
+    # Ab hamara AI agent loop lagakar 3 baar game khelega
+    for task_name in TASKS:
+        rewards: List[float] = []
+        steps_taken = 0
+        score = 0.0
+        success = False
 
-    try:
-        # 🔥 FIX 2: Yahan se 'await' hata diya kyunki ab environment normal function hai
-        obs = env.reset()
-        last_profit = 0.0
+        # Yahan bot ko log milega ki naya task shuru hua
+        log_start(task=task_name, env=BENCHMARK, model=MODEL_NAME)
 
-        for step in range(1, MAX_STEPS + 1):
-            
-            reorder_qty = get_model_message(client, step, obs.current_stock, obs.predicted_demand, last_profit)
-            
-            # 🔥 FIX 3: Yahan se bhi 'await' hata diya
-            result = env.step(QcAction(reorder_quantity=reorder_qty))
-            obs = result["observation"]
-            reward = result["reward"]
-            done = result["done"]
-            last_profit = result["info"]["Profit"]
+        try:
+            obs = env.reset()
+            last_profit = 0.0
 
-            rewards.append(reward)
-            steps_taken = step
+            for step in range(1, MAX_STEPS + 1):
+                reorder_qty = get_model_message(client, step, obs.current_stock, obs.predicted_demand, last_profit)
+                
+                result = env.step(QcAction(reorder_quantity=reorder_qty))
+                obs = result["observation"]
+                reward = result["reward"]
+                done = result["done"]
+                last_profit = result["info"]["Profit"]
 
-            log_step(step=step, action=f"order({reorder_qty})", reward=reward, done=done, error=None)
-            
-            if done:
-                success = sum(rewards) > 2.0 
-                score = sum(rewards) / MAX_STEPS
-                break
+                rewards.append(reward)
+                steps_taken = step
 
-        log_end(success=success, steps=steps_taken, score=score, rewards=rewards)
-    except Exception as e:
-        print(f"Error occurred: {e}") # Isse hume exact error dikhega agar kuch phata toh
-        log_end(success=False, steps=steps_taken, score=0.0, rewards=rewards)
+                log_step(step=step, action=f"order({reorder_qty})", reward=reward, done=done, error=None)
+                
+                if done:
+                    success = sum(rewards) > 2.0 
+                    score = sum(rewards) / MAX_STEPS
+                    break
+
+            log_end(success=success, steps=steps_taken, score=score, rewards=rewards)
+        except Exception as e:
+            print(f"Error occurred: {e}")
+            log_end(success=False, steps=steps_taken, score=0.0, rewards=rewards)
 
 if __name__ == "__main__":
     asyncio.run(main())
