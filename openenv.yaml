@@ -8,9 +8,12 @@ tasks:
   - id: task_easy
     difficulty: easy
     description: "Manage quick commerce stock with stable demand."
+    grader: "server.grader:grade"
   - id: task_medium
     difficulty: medium
     description: "Manage quick commerce stock with volatile demand."
+    grader: "server.grader:grade"
   - id: task_hard
     difficulty: hard
     description: "Manage quick commerce stock with high penalty spikes."
+    grader: "server.grader:grade"
