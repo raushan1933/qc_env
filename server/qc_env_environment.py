@@ -1,4 +1,4 @@
-from  openenv.core.env_server import Environment  
+from openenv.core.env_server import Environment, Task # Yahan Task add kiya
 from models import QcAction, QcObservation, QcState
 import random
 
@@ -10,8 +10,32 @@ MAX_DAYS = 7
 class QcEnvironment(Environment[QcAction, QcObservation, QcState]):
     def __init__(self):
         super().__init__()
-        # Internal state variable ka naam 'current_state' hi rehne do
         self.current_state = QcState(current_stock=10, day=1, total_profit=0.0)
+        
+        # 🔥 TASK REGISTRATION (Yehi missing tha) 🔥
+        self.tasks = [
+            Task(
+                id="task_easy",
+                name="Easy Task",
+                difficulty="easy",
+                description="Manage quick commerce stock with stable demand.",
+                grader="server.grader:grade"
+            ),
+            Task(
+                id="task_medium",
+                name="Medium Task",
+                difficulty="medium",
+                description="Manage quick commerce stock with volatile demand.",
+                grader="server.grader:grade"
+            ),
+            Task(
+                id="task_hard",
+                name="Hard Task",
+                difficulty="hard",
+                description="Manage quick commerce stock with high penalty spikes.",
+                grader="server.grader:grade"
+            )
+        ]
 
     def reset(self) -> QcObservation:
         self.current_state = QcState(current_stock=10, day=1, total_profit=0.0)
@@ -53,6 +77,6 @@ class QcEnvironment(Environment[QcAction, QcObservation, QcState]):
             "info": {"Sold": items_sold, "Leftover": leftover_stock, "Missed": missed_sales, "Profit": daily_profit}
         }
     
-    # ISKA NAAM WAPAS 'state' KAR DIYA (Zaroori hai)
     def state(self) -> QcState:
-        return self.current_stater
+        # Ek choti si typo thi 'self.current_stater', maine usko theek kar diya hai
+        return self.current_state
