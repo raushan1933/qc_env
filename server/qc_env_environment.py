@@ -1,4 +1,4 @@
-from openenv.core.env_server import Environment, Task # Yahan Task add kiya
+from openenv.core.env_server import Environment  
 from models import QcAction, QcObservation, QcState
 import random
 
@@ -11,31 +11,6 @@ class QcEnvironment(Environment[QcAction, QcObservation, QcState]):
     def __init__(self):
         super().__init__()
         self.current_state = QcState(current_stock=10, day=1, total_profit=0.0)
-        
-        # 🔥 TASK REGISTRATION (Yehi missing tha) 🔥
-        self.tasks = [
-            Task(
-                id="task_easy",
-                name="Easy Task",
-                difficulty="easy",
-                description="Manage quick commerce stock with stable demand.",
-                grader="server.grader:grade"
-            ),
-            Task(
-                id="task_medium",
-                name="Medium Task",
-                difficulty="medium",
-                description="Manage quick commerce stock with volatile demand.",
-                grader="server.grader:grade"
-            ),
-            Task(
-                id="task_hard",
-                name="Hard Task",
-                difficulty="hard",
-                description="Manage quick commerce stock with high penalty spikes.",
-                grader="server.grader:grade"
-            )
-        ]
 
     def reset(self) -> QcObservation:
         self.current_state = QcState(current_stock=10, day=1, total_profit=0.0)
@@ -78,5 +53,4 @@ class QcEnvironment(Environment[QcAction, QcObservation, QcState]):
         }
     
     def state(self) -> QcState:
-        # Ek choti si typo thi 'self.current_stater', maine usko theek kar diya hai
         return self.current_state
