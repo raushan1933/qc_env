@@ -1,19 +1,24 @@
 spec_version: 1
-name: qc_env
-type: space
-runtime: fastapi
-app: server.app:app
+version: "1.0"
+name: "qc_env"
+description: "Quick commerce dark store environment"
+type: "space"
+runtime: "fastapi"
+app: "server.app:app"
 port: 8000
 tasks:
-  - id: task_easy
-    difficulty: easy
+  - id: "task_easy"
+    name: "Easy Task"
+    difficulty: "easy"
     description: "Manage quick commerce stock with stable demand."
     grader: "server.grader:grade"
-  - id: task_medium
-    difficulty: medium
+  - id: "task_medium"
+    name: "Medium Task"
+    difficulty: "medium"
     description: "Manage quick commerce stock with volatile demand."
     grader: "server.grader:grade"
-  - id: task_hard
-    difficulty: hard
+  - id: "task_hard"
+    name: "Hard Task"
+    difficulty: "hard"
     description: "Manage quick commerce stock with high penalty spikes."
     grader: "server.grader:grade"
